@@ -1,0 +1,34 @@
+version: '3'
+services:
+  traefik:
+    restart: unless-stopped
+    image: traefik:v2.9
+    ports:
+      - 80:80
+      - 443:443
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`dashboard.traefik.me`)
+      - traefik.http.routers.dashboard.tls.domains[0].main=dashboard.traefik.me
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+    volumes:
+      - ./config/static.yml:/etc/traefik/traefik.yml
+      - ./config/dynamic.yml:/etc/traefik/dynamic.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - certs:/etc/ssl/traefik
+    networks:
+      - traefik
+  proxy-helper:
+    image: alpine
+    command: sh -c "cd /etc/ssl/traefik
+      && wget traefik.me/cert.pem -O cert.pem
+      && wget traefik.me/privkey.pem -O privkey.pem"
+    volumes:
+      - certs:/etc/ssl/traefik
+    networks:
+      - traefik
+volumes:
+  certs:
+networks:
+  traefik:
+    name: traefik
