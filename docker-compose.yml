@@ -8,9 +8,10 @@ services:
       - 443:443
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dashboard.rule=Host(`dashboard.traefik.me`)
+      - traefik.http.routers.dashboard.rule=HostRegexp(`dashboard.traefik.me`, `dashboard-{dashed-ip:.*}traefik.me`)
       - traefik.http.routers.dashboard.tls.domains[0].main=dashboard.traefik.me
-      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.routers.dashboard.tls.domains[0].sans=dashboard-*.traefik.me
+      - traefik.http.services.dashboard.loadbalancer.server.port=8080
     volumes:
       - ./config/static.yml:/etc/traefik/traefik.yml
       - ./config/dynamic.yml:/etc/traefik/dynamic.yml
